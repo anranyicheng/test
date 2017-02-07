@@ -1,3 +1,5 @@
+;;; 源自PG 的 ANSI commonlisp 
+;; 对列表中的数据（数值）进行排列
 (defmacro while (test &rest body)
   `(do ()
        ((not ,test))
