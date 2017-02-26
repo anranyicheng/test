@@ -62,12 +62,12 @@
 (student-number *a-stu*)
 
 (defclass piont()
-  ((x :accessor piont-x)
+  ((x :accessor piont-x)    ;使用 accessors 关键字 可以 便捷的访问 类的槽值
    (y :accessor piont-y)
    (z :accessor piont-z)))
 (setf (piont-x *piont-a*) 12)
 (setf (piont-y *piont-a*) 123)
-(setf (piont-z *piont-a*) 345)
+(setf (piont-z *piont-a*) 345)      ;在访问类的槽值之前，必须要先给它赋值，否则访问会报错
 ;; add the value of piont's slot
 
 (defun add-piont-value()
