@@ -74,3 +74,7 @@
   (* (piont-x *piont-a*)
      (piont-y *piont-a*)
      (piont-z *piont-a*)))
+
+(defun foo()
+	   "the notes of function"
+	   (print "hello,common lisp"))
