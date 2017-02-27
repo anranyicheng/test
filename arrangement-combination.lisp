@@ -64,9 +64,54 @@
 		   lst
 		   (our-l item (cdr lst)))))
 
+;;;;;;;;;; test
+ >(our-l 'a '(q w e r))
+  0: (OUR-L A (Q W E R))
+    1: (OUR-L A (W E R))
+      2: (OUR-L A (E R))
+        3: (OUR-L A (R))
+          4: (OUR-L A NIL)
+          4: OUR-L returned NIL
+        3: OUR-L returned NIL
+      2: OUR-L returned NIL
+    1: OUR-L returned NIL
+  0: OUR-L returned NIL
+;;;;;;;;
 (defun fib ( a1 a2 a3 )
 	   (if (> a2 a3) 
 	       a1
 	       (fib (* a2 a1)
 		    (1+ a2)
 		    a3)))
+;;;;;; test 
+>(fib 1 1 4)
+  0: (FIB 1 1 4)
+    1: (FIB 1 2 4)
+      2: (FIB 2 3 4)
+        3: (FIB 6 4 4)
+          4: (FIB 24 5 4) ;尾递归的函数，每一次求值都是最后的一步，当最后一次函数调用时，已经求得最终的值
+          4: FIB returned 24
+        3: FIB returned 24
+      2: FIB returned 24
+    1: FIB returned 24
+  0: FIB returned 24
+;;;;;;
+
+;;一个非递归与之对比
+
+(defun fi (n)
+	   (if (= n 1)
+	       1
+	       (* n (fi (1- n)))))
+;;test 
+ 0: (FI 5)
+    1: (FI 4)
+      2: (FI 3)
+        3: (FI 2)
+          4: (FI 1)    ;非尾递归的函数，必须先求出最后一次函数调用的结果，
+                        ;然后再与前面的每一次的值相乘，才求出最后的结果，它要维护的链表很长，系统开销很大
+          4: FI returned 1
+        3: FI returned 2
+      2: FI returned 6
+    1: FI returned 24
+  0: FI returned 120
