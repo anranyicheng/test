@@ -54,3 +54,19 @@
 	 (append (mapcar (lambda (x) (cons head x))
 			 (comb rest (1- n)))
 		 (comb rest n))))))
+
+
+;; 增加几个尾递归的例子
+ (defun our-l(item lst)
+	   (if (null lst) 
+	       nil
+	       (if (equal item (car lst))
+		   lst
+		   (our-l item (cdr lst)))))
+
+(defun fib ( a1 a2 a3 )
+	   (if (> a2 a3) 
+	       a1
+	       (fib (* a2 a1)
+		    (1+ a2)
+		    a3)))
