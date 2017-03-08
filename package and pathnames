@@ -21,7 +21,7 @@
   :name  test
   :version "1.0.0"
   :depends-on ()           ;; 包的依赖关系（与其他包之间的依赖关系）
-  :components ((:file "package")         ;系统定义设置 的文件组件 ，也就是该项目都是由哪些源代码文件组成
+  :components ((:file "package")         ;系统定义设施 的文件组件 ，也就是该项目都是由哪些源代码文件组成
                (:file "mypackege")))     ;asdf 帮助 解释器了解相关源代码文件的相互关系（调用关系）
 
 ;;;; mypackage.lisp
@@ -41,5 +41,23 @@
  
  >(test:fib(5))
  
- >(square 2)
-      
+ >(square 2)        ;; 以上内容就是包和系统定义设施之间的基本关系，这仅仅是简单的应用
+ 
+ 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;标准语言定义中，directory 标准函数 接受一种特殊类型的路径名 ，叫通配路径名 ，
+;;该路径名带有特殊值 ：wild 的组件，然后返回路径名下所有的文件列表
+;; *default-pathname-defaults* 关键字是当前系统默认的 路径名
+;; make-pathname 标准函数可以构造任意的路径名，配合directory 函数使用有 ：
+
+(directory (make-pathname :name :wild :type :wild :defaults "/home/qt/fileoslisp"))
+
+;; probe-file  标准函数将返回路径为真的路径名，若路径不存在，则返回 nil （不是所有实现都支持）
+;; 
+(probe-file "/home/qt/fileoflisp")
+
+(defun judgpath(pathname)
+    (if (null (probe-file pathname))
+         'nil
+         't))
