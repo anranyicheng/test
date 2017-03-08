@@ -1,0 +1,45 @@
+;;;; 这几天学习了关于commonlisp的包 和 平台路径的相关知识，包在lisp中是非常重要的内容，
+;;;; 路径对于软件的可移值和跨平台具有重要的意义
+
+;; define a packege   
+;;         package.lisp
+
+(in-package :cl-user)
+
+(defpackage "mypackage"        ;;包名: mypackage 
+    (:nicknames "mypackage")   ;;包的别名 mypackege 
+    (:use :common-lisp)    ;; use 是指 mypackage 包引用了 common-lisp包中 语言标准定义的所有函数，宏，类型，等等
+    
+    (:export :fib          ;; export 是包的输出接口 ，类似于其他语言中标准库的接口，该接口可以有很多，一般是函数调用接口
+             :square))) 
+             
+;;;; asdf              
+;; mypackege.asd
+
+(in-package :mypackage)
+(defsystem :test
+  :name  test
+  :version "1.0.0"
+  :depends-on ()           ;; 包的依赖关系（与其他包之间的依赖关系）
+  :components ((:file "package")         ;系统定义设置 的文件组件 ，也就是该项目都是由哪些源代码文件组成
+               (:file "mypackege")))     ;asdf 帮助 解释器了解相关源代码文件的相互关系（调用关系）
+
+;;;; mypackage.lisp
+
+(in-package :mypackage)
+(defun fib(n)
+    (if (= n 1) 
+          1
+          (* n (fib (1- n)))))
+          
+(defun square (x)
+      (* x x))
+      
+ ;;;;;;;;;;;;;;;;;;;;;;;
+ 
+ :;在读取器终端将可以直接进行下列调用
+ 
+ >(test:fib(5))
+ 
+ >(square 2)
+      
