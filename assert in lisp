@@ -1,0 +1,14 @@
+;;;; You want to add assertions(断言) to your code in order to make sure that you didn’t make
+;;   any mistakes
+
+(defun addnumbers(x y)
+  (assert
+   
+   (and (numberp x)
+	(numberp y))     ; 这里是判断，也就是你所添加断言的条件 
+
+   (x y)                 ;这里是判断依据的材料
+   "both x:-> ~S and y:-> ~S  should be anumber" x y) ;当判断条件不满足时 ，给出我们的提示信息
+                                                     ;一般的，当出现错误时，你需要重新输入所有的数据
+  (+ x y)  ;函数的功能，真正的作用
+  )
