@@ -1,0 +1,85 @@
+Gcc 通过后缀来区别输入文件的类别：
+.c 为后缀的文件： C 语言的源代码文件
+.a 为后缀的文件： 是由目标文件构成的库文件
+.C , .cc 或 .cxx 为后缀的文件： C++ 源代码文件
+.h 为后缀的文件： c 或者 C++ 的头文件
+.i 为后缀的文件： 是已经预处理过的 C 源代码文件
+.ii 为后缀的文件： 是已经预处理过的 C++ 源代码文件
+.o 为后缀的文件： 是编译后的目标文件
+.s 为后缀的文件： 是汇编语言源代码文件
+.S 为后缀的文件： 是经过预处理编译的汇编语言源代码文件
+
+
+-o output_filename :确定可执行文件的名称
+		    如果不给出这个选项， gcc 就给出预设的可执行文件 a.out
+ gcc test.c -o test
+ 
+-c 只编译，不链接成可执行文件，编译器只由是输入 .c 源代码文件生成 .o 的目标文件
+   gcc -c test.c    :生成 test.o 目标文件
+-g :产生调试工具（GNU 的gdb） 所必要的符号信息，是使用 gdb 进行调试的必须选项
+   gcc - g test.c -o test
+
+-O  对程序进行优化编译，链接，过程变慢
+-O2  优化程度更高，过程更加慢
+    gcc -O test.c -o test
+    gcc -O2 test.c -o test
+-I directoryname 将 directoryname 所指出的目录加入到程序 头文件 目录列表中
+   		   这个选项的作用是告诉编译器，如果在 当前 的 路径 中找不到需要的头文件
+		   就到 directoryname 路径中去找。
+    gcc test.c -I /home/qt/cfile -o test
+-L directoryname  将 directoryname 所指出的目录加入到程序 库文件 目录列表中
+   		  编译器首先到你 指定的库目录路径 寻找库文件，如果找不到，再到 预设的路径 下寻找
+-lname 在链接时 ，装载名称为 libname.a 的函数库 该库位于系统预设的目录 或者由 -L 选项指定的目录下  -lm 表示链接名为 libm.a 的数学函数库
+   gcc test.c - /home/qt/cfile -ltest -o test
+-w : 不生成任何警告
+-Wall : 生成所有警告信息
+- DMACRO ：定义MACRO 宏，等效于在程序中使用 #define MACRO 
+
+
+如何使用gdb 进行c 和 c++ 程序的调试
+   1、 在编译的时候，要使用相应的参数选项，使得可执行的文件附加上可调试的信息
+    step1:  gcc -g codefile.c -o codefile
+    or : gcc codefile.c -o codefile -g
+    step2 : gdb codefile 
+
+    gcc codefile -o codefile.c -g -lm
+
+    二.启动 gdb 方法： （1） gdb codefile   (2) 先启动 gdb , file codefile 
+
+    (1)设置断点
+    1. breack  函数名
+    2. breack 行号
+    3. breack 文件名 : 行号      （文件名帽号行号）
+    4. breack 行号if条件
+    (2) info break 查看所有设置的断点
+    (3) delete 断点编号     删除断点     （使用info break 查看各个断点编号）
+    (4) run 开始运行程序 调试的开始
+    (5) next 单步运行程序（不进入子函数）
+    (6) step 单步运行程序（进入子函数）
+    (7) continue 继续运行程序
+    (8) finish 运行程序，直到当前函数结束
+    (9) watch 变量名  ， 对峙定的变量进行监控
+    (10) quit 退出 gdb
+    
+makefile 基本使用方法
+	 hello: main.o funa.o funb.o func.o
+	 	gcc main.o funa.o func.o -o hello
+	 main.o: main.c
+	 	gcc -c main.c
+	 funa.o: funa.c
+	 	gcc -c funa.c
+	 funb.o: funb.c
+	 	gcc -c funb.c
+	 func.o: func.c
+	 	gcc -c func.c
+	.PHONY:clean
+		clean:
+			rm -f main.o funa.o funb.o func.o
+
+变量
+
+给hello 目标添加一个依赖 1 可以依次进行添加步骤，假如工程很大时，不可取
+
+ 	obj=main.o funa.o funb.o func.o
+	hello:$(obj)
+		gcc $(obj) -o hello
