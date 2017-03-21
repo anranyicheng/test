@@ -36,19 +36,21 @@
 		 (append (mapcar (lambda (c)(cons a c)) b)
 			 (c22 b))
 		 nil)))
+;; 下面的算法是有问题的，当随便输入一个小于等于1 的数，都会输出结果，逻辑也不是恨严谨
 (defun cn (lst n)
   (let ((a (car lst))
 	(b (cdr lst)))
     (if (> n 1)
 	(append (mapcar (lambda (e) (cons a e))
 			(cn b (1- n)))
-		(if (consp b )
+		(if (consp b )      ; 这里的consp b ，简直就是拼凑出来的产物		
 		    (cn b n) nil))
 	(mapcar (lambda (e) (cons e nil))
 		lst))))
 
 ;;(maplist (lambda (lst) (loop for n from 1 to 4 do (format t "(cn ~s ~a): ~a~%" lst n (cn lst n)))) '( a b c d))
-(defun comb(lst n)
+
+(defun proper-subset(lst n)
   (cond
     ((or (= n 0)
 	 (null lst)) '(()))
@@ -56,10 +58,17 @@
     (t (let ((head (car lst))
 	     (rest(cdr lst)))
 	 (append (mapcar (lambda (x) (cons head x))
-			 (comb rest (1- n)))
-		 (comb rest n))))))
+			 (proper-subset rest (1- n)))
+		 (proper-subset rest n))))))
 
-
+;; 运用proper—subset 完全可以构造出一个求任意长度列表的真子集，同时子集的问题在其基础之上也能够基本解决
+(defun getproper-subset (tree)
+  (let ((lst nil))
+    (dotimes (i (1+ (length tree)))
+      (setf lst (append
+		 lst
+		 (proper-subset tree i))))
+    lst))     ;该函数可以将所有的真子集输出，在其基础之上（得到真子集）可以进行任意操作
 ;; 增加几个尾递归的例子
  (defun our-l(item lst)
 	   (if (null lst) 
