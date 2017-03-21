@@ -1,6 +1,7 @@
 ;; 从群讨论中知道的排列组合方法，由于对于尾递归没有很好的理解，自己还不能写出独立的代码，保存以备后用
 (defparameter *a* ())
 (defparameter *b* '(1 2 3 4))
+;;该算法根本就是一个错误的算法，没有明确的思路，
 (defun pailie(x)
   (let ((len (length x))
 	(ls ()))
@@ -17,6 +18,9 @@
 	    (push (nth j (remove var x)) ls))
 	  (push (append (list var )ls) *a*)
 	  (setf ls())))))      ;; 以上是我完成的，感觉差距不是一般的大啊   
+\
+
+
 (defun c2(lst)
 	   (let ((a (car lst))
 		 (b (cdr lst)))
