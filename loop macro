@@ -1,0 +1,69 @@
+;;;; 重新复习loop 宏的简单用法
+
+
+
+(defun frepeat()
+  (loop repeat 5 do (print "*")))
+
+(defun freturn-from()
+  (loop as i from 1 upto 5 do
+       (print "*")
+       (when (= i 2)
+	 (return-from freturn-from i))))
+
+(defun fmaximize()
+  (loop for i in '( 1 2 3 2 3 412 12 34  23 4 23 4 12 34 1 2 34 12 34 )
+     maximize i ))
+
+(defun fminimize()
+  (loop for i in '( 1 2 3 2 3 412 12 34  23 4 23 4 12 34 1 2 34 12 34 )
+     minimize i
+       do (print i))) hs   
+      
+(defun facross()
+  (loop for i across "qwerasdf" do (print i)
+       (when (equalp i #\a)
+	 (return i ))))
+(defun facross-count ()
+  (loop for i across "hello qintao qwer jklha  kjahskl kljasduwei kalhsd owekhlal"
+     count (find  i "ag")))  ; 这个find i 后接的所要查找的东西，可以是一个字符
+              ;也可以是多个字符，但是并不意味这是一个连续的字符串，只是统计你所要找的所有字符的个数
+(defun findposition()
+  (position #\d "qwertyuiopasdfjklh"  :start 1 :end (length  "qwertyuiopasdfjklh")))
+
+(defun findposition-from-end()
+  (position 2 '( 1 32 32 2 4 )))
+
+(defun fsearch()
+  (search "qintao" "hello qt qintao"))
+
+(defun fon ()
+  (loop for i on '( 10 20 30 ) collect i))  ; ((10 20 30) (20 30) (30))
+
+(defun fsum ()
+  (loop for i upfrom 0 to 10 sum i))   ; upfrom     tp
+
+(defun ffinally()
+  (loop for i below 10
+     and  a = 0 then b
+     and b = 1 then (+ a b)
+     finally (return b)))
+(defun fon-function()
+  (loop for i on (list 10 20 30 40) by #'cddr collect i))  ; result -> ((10 20 30 40) (30 40))
+(defun fbeing-the-using()
+  (let ((my-hashtable(make-hash-table )))                               ;构造哈晞表
+    (setf (gethash 'name my-hashtable) "qintao")
+    (setf (gethash 'sex my-hashtable) 'f)
+    (setf (gethash 'number my-hashtable) 1001)
+    (setf (gethash 'address my-hashtable) "guangxi")                    ;以上四条语句为哈晞键对设置键対值
+    (print (gethash 'name my-hashtable))
+    (print (gethash 'number my-hashtable))
+    (loop for key being the hash-keys in my-hashtable   do (print key))    ;输出哈晞键
+    (loop for value being the hash-values of my-hashtable
+       do (print value))                                                   ;输出哈晞键值
+    (loop for key being the hash-keys of my-hashtable
+        using (hash-value value)                                           ;输出哈晞键对值
+       do (format t "The value associated with the key ~S is ~S~%" key value))
+    (maphash #'(lambda (k v) (format t "key: ~a   :values ~a ~%" k v)) my-hashtable)
+    (maphash #'(lambda (k v) (format t "key: ~a  ~%" k )) my-hashtable)
+    (maphash #'(lambda (k v) (format t "key: ~a  ~%" v )) my-hashtable)))             ;崎型使用maphash 函数，也可以达到相对应的目的
