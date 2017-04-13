@@ -1,0 +1,41 @@
+(defun filter (list-of-element fun)  ;筛选器   @1
+  (cond                                     ; > (filter '(1 2 3 4 1  -9 'p) #'numberp) -> (1 2 3 4 1 -9)
+    ((null list-of-element) nil)
+    ((funcall fun (car list-of-element))
+     (cons  (car list-of-element)
+	    (filter (cdr list-of-element) fun)))
+    (t (filter  (cdr list-of-element) fun ))))
+
+
+(defun myadd (tree)     ;把树中的所有节点相加（节点必须是数字）
+  (cond ((null tree) 0)
+	((numberp tree) tree)
+	(t (+ (myadd (car tree))
+	      (myadd (cdr tree))))))
+
+
+(defun countfleaves(tree)   ;统计树叶节点的数目（假如该树全部节点为nil），该函数不适用
+  (cond
+    ((null tree)0)
+    ((atom tree) 1)
+    (t (+ (countfleaves (car tree))
+	  (countfleaves (cdr tree))))))      ;car-cdr 递归，一般的会在分支条件为 T 的分支，进行 car和cdr
+                                             ;递归。利用的是，条件语句之后可以执行任意多个表达式（语句）
+
+(defun addnumber(list)       ; @2
+	   (cond 
+	     ((null list) 0)
+	     (t (+ (car list) (addnumber (cdr list))))));尾递归，一般用于条件单一，而且列表为单一线性（类型致）
+                                                           ;注意比较@1和@2,他们都和car-cdr递归有着明显的区别，
+                                                           ;就是 条件T 是否有多条执行语句
+
+(defun flatten (testlist)
+  (cond
+    ((null testlist) nil)
+    ((atom testlist) (list testlist))
+    (t
+     (append (flatten (car testlist))
+	     (flatten (cdr testlist))))))
+;;
+;; 有了这个归纳总结，对于lisp的两种递归，就算掌握的比较好的了。
+;; 一般的，还使用 labels 特殊操作符进行递归函数的设计，labels 其实就是一个块，和直接使用函数没有太大的区别
