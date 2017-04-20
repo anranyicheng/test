@@ -38,3 +38,23 @@
   
 (defun move-disk (from to)
    (list(list 'move 'disk 'from from 'to to)))
+
+
+(defun palindromic-number(&optional number)   ;回文数判断
+  (if number
+	  (if (numberp number)
+		  (setf number (format nil "~A" number)))
+	  (progn
+		(print "input a number:")
+		(setf number (format nil "~A" (read)))))
+  (let ((string number)
+		(tag t))		   
+	(do ((i 0 (1+ i))
+		 (j (1- (length string)) (1- j)))
+		((or (= i j)
+			 (> i (1- j)))
+		 tag)
+	  (when (not(equalp (elt string i)
+						(elt string j)))
+		(setf tag nil)
+		(return)))))
