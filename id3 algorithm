@@ -1,0 +1,207 @@
+;;;;
+;;在人工智能复杂问题的求解和策略中 所运用的id3 算法，代码如下
+
+(defun history (object)
+  (cdr (assoc 'history object :test #'equal)))
+
+(defun debt (object)
+  (cdr (assoc 'debt object :test #'equal)))
+
+(defun collateral (object)
+  (cdr (assoc 'collateral object :test #'equal)))
+
+(defun income (object)
+  (cdr (assoc 'income object :test #'equal)))
+
+(defun risk (object)
+  (cdr (assoc 'risk object :test #'equal)))
+
+(defstruct property
+  name
+  test
+  values)
+(defstruct decision-tree
+  test-name
+  test
+  branches)
+(defstruct leaf
+  value)
+(defstruct example-frame
+  instances
+  properties
+  classifier
+  size
+  information)
+
+(defstruct partition
+	   test-name
+	   test
+	   components
+	   info-gain)
+
+
+(defun sum (f list-of-numbers)
+  (apply '+ (mapcar f list-of-numbers)))
+
+(defun classify (instance tree)
+  (if (leaf-p tree)
+      (leaf-value tree)
+      (classify instance
+		(cdr (assoc (funcall (decision-tree-test tree) instance)
+			    (decision-tree-branches tree))))))
+
+(defun build-tree (training-frame)
+  (print "00")
+  (cond
+      	; Case 1: empty example set
+    ((zerop(length (example-frame-instances training-frame)))
+     (make-leaf :value "unable to classify: no examples")
+     (print "a"))
+       	; Case 2: all tests have been used
+    ((null (example-frame-properties training-frame))
+     (make-leaf :value (list-classes training-frame))
+     (print "b"))
+       	; Case 3: all examples in same class
+    ((zerop (example-frame-information training-frame))
+     (print "c")
+     (make-leaf :value (funcall
+			(property-test (example-frame-classifier training-frame))
+			(car (example-frame-instances training-frame)))))
+					; Case 4: select test and recur
+    (t (let ((part (choose-partition (gen-partitions training-frame))))
+	 (make-decision-tree
+	  :test-name (partition-test-name part)
+	  :test (partition-test part)
+	  :branches (mapcar #'(lambda (x)
+				(cons (car x) (build-tree (cdr x))))
+			    (partition-components part)))))))
+
+(defun gen-partitions (training-frame)
+  (mapcar #'(lambda (x) (partition training-frame x))
+	  (example-frame-properties training-frame)))
+
+(defun choose-partition (candidates)
+  (cond ((null candidates) nil)
+	((= (list-length candidates) 1)(car candidates))
+	(t (let ((best (choose-partition (cdr candidates))))
+	     (if (> (partition-info-gain (car candidates)) (partition-info-gain best))
+		 (car candidates)
+		 best)))))
+
+(defun list-classes (training-frame)
+  (do
+   ((classes (property-values (example-frame-classifier training-frame))
+	     (cdr classes))
+    (classifier (property-test (example-frame-classifier training-frame)))
+    classes-present)
+					; local var accumulates result
+   ((null classes) classes-present)
+					; exif clause
+    (if (member (car classes) (example-frame-instances training-frame)
+		:test #'(lambda (x y) (equal x (funcall classifier y))))
+	 (setf classes-present (cons (car classes) classes-present)))))
+	  ;(push (car classes) classes-present))))
+(defun partition (root-frame property)
+  (let ((parts (mapcar
+		#'(lambda (x) (cons x (make-example-frame)))
+		(property-values property))))
+    (dolist (instance (example-frame-instances root-frame))
+      (push instance (example-frame-instances
+		      (cdr (assoc (funcall (property-test property) instance) parts)))))
+    (mapcar #'(lambda (x)
+		(let ((frame (cdr x)))
+		  (setf (example-frame-properties frame)
+			(remove property (example-frame-properties root-frame)))
+		  (setf (example-frame-classifier frame)
+			(example-frame-classifier root-frame))
+		  (setf (example-frame-size frame)
+			(list-length (example-frame-instances frame)))
+		  (setf (example-frame-information frame)
+			(compute-information
+			 (example-frame-instances frame)
+			 (example-frame-classifier root-frame)))))
+	    parts)
+    (make-partition
+     :test-name (property-name property)
+     :test (property-test property)
+     :components parts
+     :info-gain (compute-info-gain root-frame parts))))
+
+(defun compute-info-gain (root parts)
+	   (- (example-frame-information root)
+	      (sum #'(lambda (x) (* (example-frame-information (cdr x))
+				    (/ (example-frame-size (cdr x))
+				       (example-frame-size root))))
+		   parts)))
+
+(defun compute-information (examples classifier)
+  (let ((class-count
+	 (mapcar #'(lambda (x) (cons x 0))
+		 (property-values classifier)))
+	(size 0))
+      	; count number of instances in each class
+    (dolist (instance examples)
+      (incf size)
+      (incf (cdr (assoc
+		  (funcall (property-test classifier) instance)
+			class-count))))
+      	; compute information content of examples
+    (sum #'(lambda (x) (if (= (cdr x) 0)
+			   0
+			   (* -1
+			      (/ (cdr x) size)
+			      (log (/ (cdr x) size) 2))))
+	 class-count)))
+
+
+(defparameter tests
+  (list (make-property
+	 :name 'history
+	 :test #'history
+	 :values '(good bad unknown))
+	(make-property
+	 :name 'debt
+	 :test #'debt
+	 :values '(high low))
+	(make-property
+	 :name 'collateral
+	 :test #'collateral
+	 :values '(none adequate))
+	(make-property
+	 :name 'income
+	 :test #'income
+	 :values '(0-to-15k 15k-to-35k over-35k))))
+
+ 
+(defparameter examples
+  '(((risk . high) (history . bad) (debt . high) (collateral . none) (income . 0-15k))
+    ((risk . high) (history . unknown) (debt . high) (collateral . none) (income . 15k-35k))
+    ((risK . moderate) (history . unknown)(debt . low)(collateral . none)(income . 15k-35k))
+    ((risk . high) (history . unknown) (debt . low) (collateral . none) (income . 0-15k))
+    ((risk . low) (history . unknown) (debt . low) (collateral . none) (income . over-35k))
+    ((risk . low) (history . unknown) (debt . low) (collateral . adequate) (income . over-35k))
+    ((risk . high) (history . bad) (debt . low) (collateral . none) (income . 0-15k))
+    ((risk . moderate) (history . bad) (debt . low) (collateral . adequate) (income . over-35k))
+    ((risk . low) (history . good) (debt . low) (collateral . none) (income . over-35k))
+    ((risk . low) (history . good) (debt . high) (collateral . adequate) (income . over-35k))
+    ((risk . high) (history . good) (debt . high) (collateral . none) (income . 0-15k))
+    ((risk . moderate) (history . good) (debt . high) (collateral . none) (income . 15k-35k))
+    ((risk . low) (history . good) (debt . high) (collateral . none) (income . over-35k))
+    ((risk . high) (history . bad) (debt . high) (collateral . none) (income . 15k-35k))))
+
+(defparameter classifier
+  (make-property
+   :name 'risk
+   :test #'risk
+   :values '(high moderate low)))
+(defparameter credit-examples
+  (make-example-frame
+   :instances examples
+   :properties tests
+   :classifier classifier
+   :size (list-length examples)
+   :information (compute-information examples classifier)))
+
+
+(defparameter credit-tree (build-tree credit-examples))
+
