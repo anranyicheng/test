@@ -1,0 +1,38 @@
+;;;; 使用列表，将列表中的元素转换为二叉树形式存储
+;; '(1 2 3 4 5 6 7) -> (4 (2 (1 NIL NIL) (3 NIL NIL)) (6 (5 NIL NIL) (7 NIL NIL)))
+
+;; 将列表分成三部分，左子列表，根列表，右子列表，先取左子列表
+(defun get-halve-list-left(list)
+  (let((lst (copy-list list))
+	   (lstlength (length list)))
+	(when(oddp lstlength)
+	  (butlast lst (/(+ lstlength 1) 2)))))
+
+;; 取右子列表
+(defun get-halve-list-right(list)
+  (let((lst (copy-list list))
+	   (lstlength (length list)))
+	(when(oddp lstlength)
+	  (nthcdr (/(1+ lstlength) 2) lst))))
+    
+;; 取根子列表
+(defun get-intermediate-list(list)
+  (let ((long (length list)))
+	(when (oddp long)
+	  (list(nth (/(1- long)2) list)))))
+    
+;;采用递归构建二叉树
+(defun build-balance-tree(list)
+  (let* ((left (get-halve-list-left list))  ;取出左子列表，保存
+		 (right(get-halve-list-right list)))    ;取出右子列表，保存
+	 (cond 
+	  ((= 1 (length left))                     ;当左子列表长度为一，（是一个节点时），构建
+	   (append(get-intermediate-list list)     ;根节点（子）
+			  (list (append left '(()) '(())))     ; ->(1 nil nil)
+			  (list(append right '(()) '(())))))   ; ->(3 nil nil)     构建树叶
+	  (t
+	   (append	 (get-intermediate-list list)  ;根节点（根），构建整棵树，采用递归 
+				 (list (build-balance-tree left))
+				 (list(build-balance-tree right)))))))
+
+	
