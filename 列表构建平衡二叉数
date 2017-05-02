@@ -34,5 +34,31 @@
 	   (append	 (get-intermediate-list list)  ;根节点（根），构建整棵树，采用递归 
 				 (list (build-balance-tree left))
 				 (list(build-balance-tree right)))))))
+				 
+				 
+				 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;下面构造一个可以任意构建二叉树的函数（非平衡）
+
+(defun insert(element tree)
+  (cond 
+    ((null tree) 
+     (list element nil nil))      ;当树为空时，构建树根
+    ((= element (car tree))
+     tree)                         ;当要插入的元素已经存在时，不插入，直接返回该树
+    ((< element (car tree))        
+     (list (car tree) (insert element (cadr tree))
+	   (caddr tree)))          ;按照左节点小于根节点，根节点小于右节点构建该树
+    (t
+     (list (car tree) (cadr tree)
+	   (insert element (caddr tree))))))
+
+
+
+
+
+
+
+				 
 
 	
