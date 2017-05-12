@@ -1,0 +1,25 @@
+(ql:quickload :cl-mysql)   ;安装cl-mysql
+
+(defpackage :qt-operate-mysql
+  (:use :common-lisp :cl-mysql :cl-mysql-system))   ;定义一个自己的包，用于操作mysql
+  
+(in-package :qt-operate-mysql)  
+
+(connect :host "localhost" :user "root" :password "password") ;password输入密码
+
+(query "show databases")     ;查询当前数据库
+
+(query "create database student")  ;创建一个数据库
+
+(query "use student")    ;使用student数据库
+
+(query "create table student_grade (id int(8) primary key auto_increment,
+                                    name varchar(15),
+                                    sex char(2),
+                                    mathgrade float)")   ;创建一个表
+
+(query "insert into student_grade values (10001 , 'qt' , 'm' , 75),
+                                        (10002 , 'xiaoming' , 'f' ,80 ) ") ;插入数据
+(query "select * from student_grade ")                                     
+
+(query "delete from student_grade where id=10001")
