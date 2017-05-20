@@ -1,0 +1,7 @@
+(defpackage :com.system.time
+  (:use :common-lisp))
+(in-package :com.system.time)
+(defun time-of-now()
+  (multiple-value-bind (second minute hour day month year)
+	  (get-decoded-time)
+	(list second minute hour day month year)))   ;输出 秒 分 时 日 月 年
