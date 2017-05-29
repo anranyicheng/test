@@ -48,5 +48,10 @@
 ;;;; 运行结果
 CL-USER> (tran-integer-string (dm-integer (em-integer (tran-string-integer "hello-world"))))
 "hello-world"
-  
+
+
+;实践总结，对于一般的字符加密，欧拉函数 fn=(q-1) * (p-1) 不能小于256,否则会产生多对一加密解密的情况，导致出错。rsa算法对于计算有
+;很高的要求，计算量很大，当然这对于使用commonlisp来编程，难度大大减小，lisp提供大数运算的机制，非常方便的进行大数计算
+;这是很方便的。
+
   
