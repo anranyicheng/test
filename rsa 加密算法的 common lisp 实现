@@ -1,0 +1,52 @@
+;;;; 
+
+;上了物联网安全导论的课，学到rsa算法，在这里用commonlisp实现该算法
+;  计算公钥和密钥
+;  假设p = 3、q = 11（p，q都是素数即可。），则n = pq = 33；
+;  fn = (p-1)(q-1) = (3-1)(11-1) = 20；
+;  根据模反元素的计算公式，我们可以得出，e·d ≡ 1 (mod 20),即e·d = 20t+1 (n为正整数)；我们假设t=1，则e·d = 21。e、d为正整数，并且e与r互质，则e = 3，d = 7。（两个数交换一下也可以。）
+;　到这里，公钥和密钥已经确定。公钥为(N, e) = (33, 3)，密钥为(N, d) = (33, 7)。
+
+
+(defparameter *np* 257)
+
+(defparameter *nq* 307)
+
+(defparameter *nn* (* *np* *nq*))               ;78899
+
+(defparameter *fn* (* (1- *np*) (1- *nq*)))     ;78336
+
+(defparameter *ee* 4099)
+
+(defun get-d-t()    ;计算d可取的某几个值
+  (do ((d 1 (1+ d)))
+	  ((> d 100000))
+	(do ((t 1 (1+ t)))
+		((> t 100000))
+	  (if (= (* d 4099) (+ (* t 78336) 1))
+		  (progn (print (list d t))
+				 (return)))))) 
+         
+;;;计算得到          
+;(19627 1027) 
+;(97963 5126)    即 d= 19627 或者 97963 
+
+(defparameter *nd* 19627)
+
+(defun tran-string-integer(massege)
+  (loop for i across massege collect (char-code i)))     ;将输入字符串中的每个字符转化为ascll码
+
+(defun em-integer(integer-list)
+  (mapcar (lambda (x) (mod (expt x *ee*) *nn*)) integer-list))    ;对每个ascll 码加密
+
+(defun dm-integer (integer-list)
+  (loop for i in integer-list collect (code-char (mod (expt i *nd*) *nn*)))) ;解密每个ascll码，并转化为字符
+
+(defun tran-integer-string(integer-list)
+  (concatenate 'string  integer-list))     ;将字符链接成字符串
+  
+;;;; 运行结果
+CL-USER> (tran-integer-string (dm-integer (em-integer (tran-string-integer "hello-world"))))
+"hello-world"
+  
+  
