@@ -1,0 +1,40 @@
+;;;; sbcl 镜像的导出和导入
+;;; 在终端
+~$ sbcl     ;启动lisp环境
+
+*(defun enjoy()
+	   (print "hello save-lisp-and-die"))
+
+*(sb-ext:save-lisp-and-die "sbcl-image" ) ;在默认的路径下保存当前镜像，文件名为sbcl-image
+
+
+* sbcl --core "sbcl-image"     ;重新启动运行镜像
+* (enjoy) -> "hello save-lisp-and-die"
+
+
+
+
+;;; 在emcas slime中将镜像导出
+
+>(ql:quickload :trivial-dump-core)
+
+>(defun enjoy()
+	   (print "hello save-lisp-and-die"))
+
+然后 键入 M-x *inferior-lisp*
+
+在缓冲区*inferior-lisp*中键入：
+(trivial-dump-core::sbcl-dump-image-slime "sbcl-slime")  ;"sbcl-slime" 是将要导出镜像的文件名，可以带有路径    "/path/to/sbcl-slime"
+
+
+在emacs和slime中重新导入镜像，需要在启动slime 插件的时候设置启动环境 
+具体方法是：在.emacs 或者 .init.el 配置文件中设置启动slime的附带条件：
+
+(setq slime-lisp-implementations
+      '((sbcl ("sbcl" "--core" "/path/to/sbcl-slime"))))
+
+这样在slime启动之后，镜像已经成功导入到当前的环境里，
+
+>(enjoy)
+
+以上是两种常用环境导出和导入sbcl镜像的方法
