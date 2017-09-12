@@ -1,0 +1,509 @@
+;;;; in this file , I define many useful function ,which can use immediately
+
+(in-package :cl-user)
+(defpackage :com.qt.tool
+  (:use :common-lisp))
+
+(in-package :com.qt.tool)
+
+;; file operation
+(defparameter *a* 1234)
+(defun copy-file (from to)
+  (let* ((element-type '(unsigned-byte 8))
+		 (buffer (make-array 8192 :element-type element-type)))
+	(with-open-file (in from :element-type element-type)
+	  (with-open-file (out to :element-type element-type
+						   :direction :output
+						   :if-exists :supersede)
+		(loop (let ((position (read-sequence buffer in)))
+				(when (zerop position)
+				  (return))
+				(write-sequence buffer out :end position)))
+		(pathname out)))))
+
+;; 创建一个文件目录
+(defun create-a-directory (new-directory)
+  (ensure-directories-exist new-directory))
+
+
+;; string operation
+
+
+(defparameter *mystr* (make-array 5 :fill-pointer 0 :adjustable t :element-type 'character))
+
+(defun push-character(arg goal)
+  (vector-push (character arg) goal))
+
+(defun getchared()
+  (loop for getchar across "qwerasdf" collect getchar))  ;->(#\q #\w #\e #\r #\a #\s #\d #\f)
+
+(defun collect-character(string)
+  (coerce string 'character))   ;string -> "a"   -> #\a  length of string must be one
+
+(defun change-to-char(string)
+  (coerce string 'list))                     ;->(#\q #\w #\e #\r #\a #\s #\d #\f)
+
+(defun get-character(character-input)
+  (character character-input))    ; character-input must be a symbol such as 'a or 'b
+
+(defun list-char-to-string()
+  (let ((string nil))
+	(dolist (lst '(#\p #\l #\k #\o ))
+	  (setf string (concatenate 'string  string (list lst))))
+	(format t "~A" string)))    ;->plko
+
+(defun string-append(stringa stringb &optional starta  enda startb endb )
+  (if starta
+      starta
+      (setf starta 0))    ;make sure that position of string to append is right
+  (if startb
+      startb
+      (setf startb 0))
+  (if enda
+      enda
+      (setf enda (length stringa)))   ;make sure that position of string to append is right
+  (if endb 
+      (setf endb (length stringb)))
+  (if (and
+       (<= starta (length stringa))
+       (<= startb (length stringb))
+       (<= enda (length stringa))
+       (<= endb (length stringb)))
+      (concatenate 'string
+		   (subseq stringa starta enda)
+		   (subseq stringb startb endb))
+      "string-append arguments error"))
+
+(defun get-string()
+  (format nil "~A" (read)))
+
+;;将列表中的元素拼接成字符串
+(defun list-element-to-string (lst)    
+  (let ((x ""))
+	(dolist (i lst x)
+	  (setf x (concatenate 'string  x (format nil "~a" i))))))
+
+
+(defun my-merge-string(x y)
+  (merge 'string x y #'string<=))
+
+(defun my-merge-list(x y)
+  (merge 'list x y #'<))
+
+
+
+
+;; 
+(defun adjudge-string(var)
+  "constructing the    :name or   :number  when we need "
+  (cond 
+	((equalp 'name var) :name)
+	((equalp 'sex var) :sex)
+	((equalp 'number var ) :number)
+	((equalp 'address var) :address)
+	;; ............................ ; what we need
+	(t nil)))
+
+
+(defun test(x)
+  "constructing the :name when we need "
+  (if (equalp 'name x)
+	  (typecase x
+		(symbol :name))
+	  nil))
+
+(defun euclid (a b)
+  (if (= b 0)
+	  (format t "~d " a)
+	  (euclid b (mod a b))))
+
+
+
+(defun get-least-common-multiple(numbera numberb numberc )
+  (lcm numbera numberb numberc ))   ;最小公倍数
+
+(defun get-greatest-common-denominator (numbera numberb numberc)
+  (gcd numbera numberb numberc))    ;最大公约数
+
+(defun convert(lst &optional (ra 2))
+  (let ((sum 0)
+		(ls (reverse lst)))
+	(dotimes (i (length ls))
+	  (incf sum (* ( expt ra i) (nth i lst))))))
+										;任何进制的求值  ：(convert '(1 0 1 0 ) 2)
+
+
+(defun filter (list-of-element fun)  ;筛选器   @1
+  (cond                                     ; > (filter '(1 2 3 4 1  -9 'p) #'numberp) -> (1 2 3 4 1 -9)
+    ((null list-of-element) nil)
+    ((funcall fun (car list-of-element))
+     (cons  (car list-of-element)
+	    (filter (cdr list-of-element) fun)))
+    (t (filter  (cdr list-of-element) fun ))))
+
+
+(defun sumleaves(tree)            ;把树中的所有节点相加（节点必须是数字）
+  (cond ((null tree) 0)                                                                                                                                                                                              
+	((numberp tree) tree)
+	(t (+ (sumleaves (car tree))
+	      (sumleaves (cdr tree))))))
+
+(defun change-by-fun(fun tree) ; 把每个列表元素加一  （线性）  
+  (cond 
+    ((null tree) nil)
+    (t (cons(funcall fun (car tree))
+       (change-by-fun fun (cdr tree))))))
+
+(defun countfleaves(tree)   ;统计树叶节点的数目  （假如该树全部节点为nil），该函数不适用
+  (cond
+    ((null tree)0)
+    ((atom tree) 1)
+    (t (+ (countfleaves (car tree))
+	  (countfleaves (cdr tree))))))      ;car-cdr 递归，一般的会在分支条件为 T 的分支，进行 car和cdr
+                                         ;递归。利用的是，条件语句之后可以执行任意多个表达式（语句）
+
+(defun sumleaves-a(list)       ; @2
+	   (cond 
+	     ((null list) 0)
+	     (t (+ (car list) (sumleaves-a (cdr list))))))   ;尾递归，一般用于条件单一，而且列表为单一线性（类型一致）
+                                                         ;注意比较@1和@2,他们都和car-cdr递归有着明显的区别，就是 条件T 是否有多条执行语句
+
+(defun flatten (testlist)
+  (cond
+    ((null testlist) nil)
+    ((atom testlist) (list testlist))
+    (t
+     (append (flatten (car testlist))
+			 (flatten (cdr testlist))))))
+
+
+
+(defun make-queue(&optional (list '(nil nil)))
+  "create a list as  a queue , first element store the queue(list) ,
+   second element store the first element of queue like : '((1 2 3) . 1)"
+  list)
+
+
+(defun push-in-queue(element queue-list)
+  " push the element into queue"
+  (setf (car queue-list) (cons element (car queue-list))
+		(cdr queue-list) element))
+
+(defun pop-out-queue(queue-list)
+  "pop elemen from queue"
+  (setf (car queue-list) (cdr (car queue-list))
+		(cdr queue-list) (car (car queue-list))))
+
+
+
+(defun primep(number)
+  (when (and (numberp number)
+			 (>= number 2))
+	(do((judge 2 (1+ judge))
+		(temp (isqrt number)))
+	   ((> judge temp))
+	  (if
+	   (zerop (mod number judge))
+	   (return nil)
+	   (return t)))))
+
+
+ (defun is-prime-number(number)
+			(let ((num number))
+			  (do ((index 2 (1+ index)))
+				  ((>= index num)t)
+				(if (= 0 (mod num index))
+					(return-from is-prime-number nil)))))
+
+(defun decomposition-quality-factor (number)
+  (let ((num number) (prime-list (make-array 10 :fill-pointer 0 :adjustable t)))
+	(if (is-prime-number num)
+		(progn
+		  (format t "~a~%" num)
+		  (return-from decomposition-quality-factor nil)))
+	(do ((index 2 (1+ index)))
+		((>= index num) nil)
+	  (if (is-prime-number index)
+		  (push index prime-list)))
+	(dolist (value prime-list)
+	  (let ((test-flag nil))
+		(do ()
+			(test-flag nil)
+		  (if (= 0 (mod num value))
+			  (progn
+				(format t "~a~%" value)
+				(setf num (/ num value))
+				(if (is-prime-number num)
+					(progn
+					  (format t "~a~%" num)
+					  (return-from decomposition-quality-factor nil))))
+			  (setf test-flag t)))))))
+
+
+
+
+
+;; tree operation
+
+(defun tree-value(tree)
+  (car tree))
+
+
+(defun left-subtree(tree)
+  (cadr tree))
+
+
+(defun right-subtree(tree)
+  (caddr tree))
+
+
+(defun make-tree(value left right)
+  (list value left right))
+
+
+(defun grow-tree(new-value tree)
+  (cond ((null tree) (make-tree new-value nil nil))
+		((= new-value (tree-value tree)) tree)
+		((> new-value (tree-value tree))
+		 (make-tree (tree-value tree)
+					(left-subtree tree)
+					(grow-tree new-value (right-subtree tree))))
+		(t (make-tree (tree-value tree)
+					  (grow-tree new-value (left-subtree tree))
+					  (right-subtree tree)))))
+
+
+(defun search-value(s-value tree)
+  (cond ((null tree) nil)
+		((= s-value (tree-value tree)) tree)
+		((> s-value (tree-value tree))
+		 (search-value s-value (right-subtree tree)))
+		(t (search-value s-value (left-subtree tree)))))
+
+
+
+;;
+
+(defun show ( a b)
+  (let (( i a)
+		(j b)
+		(tag1 0)
+		(tag2 0)
+		(tag3 0)
+		(tag4 0))
+    (do (( x i)
+		 ( y j))
+		((and (= x 1)
+			  (= y 9)))
+      (print (list x y))
+      (when (and (= x y)
+				 (>= x 5))
+		(setf tag1 1 tag4 0))
+      (when (and (= (+ x y) 9)
+				 (> x y))
+		(setf tag2 1 tag1 0))
+      (when (and (= x y )
+				 (<= x 4))
+		(setf tag3 1 tag2 0))
+      (when (and (= (+ x y) 10)
+				 (> y x))
+		(setf tag4 1 tag3 0))
+      (when (= tag1 1)
+		(setf y (1- y)))
+      (when (= tag2 1)
+		(setf x (1- x)))
+      (when (= tag3 1)
+		(setf y (1+ y)))
+      (when (= tag4 1)
+		(setf x (1+ x))))))
+
+;;;; You want to add assertions(断言) to your code in order to make sure that you didn’t make
+;;   any mistakes
+
+(defun addnumbers(x y)
+  (assert
+   
+   (and (numberp x)
+	(numberp y))     ; 这里是判断，也就是你所添加断言的条件 
+
+   (x y)                 ;这里是判断依据的材料
+   "both x:-> ~S and y:-> ~S  should be a number" x y) ;当判断条件不满足时 ，给出我们的提示信息
+                                                     ;一般的，当出现错误时，你需要重新输入所有的数据
+  (+ x y)  ;函数的功能，真正的作用
+  )
+
+
+
+;; 凯撒加密 
+(defun caesar-cipher(string n)
+  (let ((lst nil))
+	(setf lst(loop for i across string collect (code-char (+ n (char-code i)))))
+	(setf lst(concatenate 'string lst))
+	lst))
+
+;;get time of now 
+
+(defun time-of-now()
+  (multiple-value-bind (second minute hour day month year)
+	  (get-decoded-time)
+	(list  year month day hour minute second)))
+
+
+
+
+
+
+
+
+
+(defun remove-number-line-on-file(file-name)
+  (let ((in (open file-name
+				  :direction :input
+				  :if-does-not-exist :error))
+		(out (open (concatenate 'string file-name "1")
+				   :direction :output
+				   :if-does-not-exist :create))
+		(buffer nil)
+		(temp nil))
+	(with-standard-io-syntax 
+	  (loop for line = (read-line in nil)
+			while line do
+			  (progn 
+				(setf buffer line)
+				(setf temp(multiple-value-bind (first second)
+							  (parse-integer line :junk-allowed t)
+							(list first second)))
+				(if (not (zerop (cadr temp)))
+					(setf buffer (subseq buffer  (cadr temp)) ))
+				  (format  out "~A~%" buffer ))))
+	
+	(close in)
+	(close out))
+  (delete-file file-name)
+  (rename-file (concatenate 'string file-name "1") file-name))
+
+
+
+
+
+(defun count-atom(list)
+  (cond ((null list) 0)
+		((atom list) 1)
+		(t (+ (count-atom (car list))
+			  (count-atom (cdr list))))))
+
+(defun flatten-b(list)
+  (cond ((null list )nil)
+		((atom list) (list list))
+		(t (append (flatten (car list))
+				   (flatten (cdr list))))))		   
+
+(defun flatten-a(list)
+  (labels ((collect (lst temp)
+			 (cond ((null lst) nil)
+				   ((atom lst) (cons lst temp))
+				   (t  (collect (car lst) 
+						 (collect (cdr lst) temp))))))
+	(collect list nil)))
+
+
+
+
+;;;;;;;
+
+(defun bfs(end queue net)
+  (cond ((null queue) nil)
+		(t (let* ((path (car queue))
+				  (node (car path)))
+			 (cond ((eql node end) (reverse path))
+				   (t (bfs end 
+						   (append (cdr queue) (new-path path node net))
+						   net)))))))
+
+(defun short-search(start end net)
+  (bfs end (list (list start)) net))
+
+(defun new-path (path node net)
+  (mapcar (lambda (n) (cons n path)) (cdr (assoc node net))))
+
+
+;;(defparameter *a* '((a b c) (b c) (c d)))
+
+
+
+(defun average(x y)
+  (/ (+ x y) 2.0))
+
+(defun improve(guess x)
+  (average guess (/ x guess)))
+
+(defun square(x)
+  (* x x))
+
+(defun good-enough(guess x limit)
+  (< (abs (- (square guess) x)) limit))
+
+(defun sqrt-iter(guess x limit)
+  (cond ((good-enough guess x limit ) guess)
+		(t (sqrt-iter (improve guess x) x limit))))
+
+
+(defmacro result-precision(&rest rest)
+  `(coerce ,@rest 'long-float))
+
+
+
+(defun remove-item( item list )
+  (cond ((null list ) nil)
+		((equal item (car list)) (pop list ) list)
+		(t (cons (car list)
+				 (pop-item item (cdr list))))))
+
+(defun add-item-after-goal-item( new-item goal-item list )
+  (labels ((add (new goal lst)
+			 (cond ((null lst ) nil)
+				   ((equal goal (car lst)) (append (list goal new) (cdr lst )))
+				   (t (cons (car lst)
+							(add new goal (cdr lst)))))))
+	(add new-item goal-item list)))
+
+(defun add-item-before-goal-item( new-item goal-item list )
+  (labels ((add (new goal lst)
+			 (cond ((null lst ) nil)
+				   ((equal goal (car lst)) (push new-item lst))
+				   (t (cons (car lst)
+							(add new goal (cdr lst)))))))
+	(add new-item goal-item list)))
+
+(defun add-item-list-after-goal-item( item-list goal-item list )
+  (labels ((add (new goal lst)
+			 (cond ((null lst ) nil)
+				   ((equal goal (car lst)) (append (list goal) item-list (cdr lst )))
+				   (t (cons (car lst)
+							(add new goal (cdr lst)))))))
+	(add item-list goal-item list)))
+
+
+(defun add-item-list-before-goal-item( item-list goal-item list )
+  (labels ((add (new goal lst)
+			 (cond ((null lst ) nil)
+				   ((equal goal (car lst)) (append  item-list (list goal-item ) list))
+				   (t (cons (car lst)
+							(add new goal (cdr lst)))))))
+	(add item-list goal-item list)))
+
+
+(defun replace-item(new-item goal-item goal-list)
+  (let ((temp-num 
+		  (dotimes (i (length goal-list) i)
+			(when (equal goal-item (nth i goal-list))
+			  (return i)))))
+	(replace goal-list (list new-item) :start1 temp-num :end1 (1+ temp-num))))
+
+
+;;remove usage
+
+(defun remove-one-item-of-list(list item)
+  (remove item list :count 1))
+
+
